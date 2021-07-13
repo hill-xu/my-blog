@@ -107,7 +107,7 @@ deploy:
 # Sidebar settings
 sidebar: true                           # whether or not using Sidebar.
 sidebar-about-description: "做自己！"
-sidebar-avatar: /img/avatar.webp      # use absolute URL, seeing it's used in both `/` and `/about/`
+sidebar-avatar: img/avatar.webp      # use absolute URL, seeing it's used in both `/` and `/about/`
 
 
 # Featured Tags
