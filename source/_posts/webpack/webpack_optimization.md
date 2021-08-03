@@ -1,10 +1,10 @@
 ---
-title: webpack 打包构建优化
+title: WEBPACK 打包构建优化
 ---
 # Webpack 优化
 webpack优化主要有两个方面：
-1. 构建速度优化，当项目越来越大的时候编译的速度会变慢，从而影响开发效率。
-2. 打包优化，对产出的代码进行合理代码分割、css shaking、js shaking...等
+1.构建速度优化，当项目越来越大的时候编译的速度会变慢，从而影响开发效率。
+2.打包优化，对产出的代码进行合理代码分割、css shaking、js shaking...等
 
 ## 默认无优化webpack配置
 ```javascript
@@ -56,7 +56,7 @@ module.exports = {
 ```
 
 ## 构建速度优化
-1. 通过设置include/exclude减少webpack遍历目录树的时间。主要针对loader添加该配置
+1.通过设置include/exclude减少webpack遍历目录树的时间。主要针对loader添加该配置
 ```javascript
 ...
 rules: [
@@ -90,7 +90,7 @@ rules: [
 ...
 ```
 
-2. 设置resolve.modules
+2.设置resolve.modules
 ```javascript
 resolve: {
     modules: [path.resolve(__dirname, 'node_modules')]
@@ -100,7 +100,7 @@ resolve.modules用于配置webpack去哪些目录下寻找第三方模块，默�
 所以当安装的第三方模块都放在项目根目录时，就没有必要安默认的一层一层的查找，直接指明存放的绝对位置。
 
 
-3. 设置resolve.extensions
+3.设置resolve.extensions
 ```javascript
 resolve: {
     extensions: ['js']
@@ -114,10 +114,10 @@ resolve: {
 + 列表尽可能的小。
 + 书写导入语句时，尽量写上后缀名。
 
-4. resolve.alias
+4.resolve.alias
 webpack 默认会去寻找所有 resolve.root 下的模块，但是有些目录我们是可以明确告知 webpack 不要管这里，从而减轻 webpack 的工作量
 
-5. module.noParse
+5.module.noParse
 告诉webpack精准过滤不需要解析的文件
 ```javascript
 noParse: /jquery|lodash/,  //接收参数  正则表达式 或函数
@@ -128,7 +128,7 @@ noParse:function(contentPath){
 主要用到的是函数的方式, contentPath包含loader路径以及资源路径(loader1!loader2!..loaderx!assetsPath) 有更大的操作空间
 
 
-6. DLLPlugin/DllReferencePlugin 
+6.DLLPlugin/DllReferencePlugin 
 DLLPlugin 它能把第三方库代码分离开，并且每次文件更改的时候，它只会打包该项目自身的代码。所以打包速度会更快。类似缓存的概念。
 添加webpack.dll.config.js
 ```javascript
@@ -177,7 +177,7 @@ plugins: [
 ```
 
 
-7. DLLPlugin配置太复杂了，可以用hard-source-webpack-plugin插件。HardSourceWebpackPlugin是webpack的插件，为模块提供中间缓存步骤。为了查看结果，您需要使用此插件运行webpack两次：第一次构建将花费正常的时间。第二次构建将显着加快
+7.DLLPlugin配置太复杂了，可以用hard-source-webpack-plugin插件。HardSourceWebpackPlugin是webpack的插件，为模块提供中间缓存步骤。为了查看结果，您需要使用此插件运行webpack两次：第一次构建将花费正常的时间。第二次构建将显着加快
 
 ```javascript
 const HardSourceWebpackPlugin = require('hard-source-webpack-plugin')
@@ -189,62 +189,62 @@ new HardSourceWebpackPlugin()
 
 ## 打包输出优化
 
-1. css 抽离独立文件
+1.css 抽离独立文件
     在不做css抽离之前，会在打包的js里面引入css内容，通过一系列css loader的处理，最终通过style-loader加载到html中去。增加了js文件的体积。使用mini-css-extract-plugin来实现css抽离, 用MiniCssExtractPlugin.loader代替style-loader。
-    ```javascript
-    const MiniCssExtractPlugin = require('mini-css-extract-plugin')
-    ...
-    module: {
-        rules: [
-            {
-                test: /\.css$/,
-                include: [path.resolve(__dirname, "./src"),],
-                use: [
-                    MiniCssExtractPlugin.loader,
-                    // 'style-loader', 
-                    'css-loader', 
-                ]
-            }
-        ]
-    },
-    plugins: [
-        // 抽离css
-        new MiniCssExtractPlugin({
-            filename: "css/common.css"
-        })
+```javascript
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+...
+module: {
+    rules: [
+        {
+            test: /\.css$/,
+            include: [path.resolve(__dirname, "./src"),],
+            use: [
+                MiniCssExtractPlugin.loader,
+                // 'style-loader', 
+                'css-loader', 
+            ]
+        }
     ]
-    ...
-    ```
+},
+plugins: [
+    // 抽离css
+    new MiniCssExtractPlugin({
+        filename: "css/common.css"
+    })
+]
+...
+```
 
-2. js代码分割, 有两种方式。
-    2.1 entry - 配置多入口、多页面
-    ```javascript
-    entry: {
-        index: './src/index.js',
-        xxx: './src/xxxx.js',
-    }
-    ```
-    弊端：如果有公共的代码块，那么打包之后的两个Bundle里都会包含重复的模块。
+2.js代码分割, 有两种方式。
+2.1 entry - 配置多入口、多页面
+```javascript
+entry: {
+    index: './src/index.js',
+    xxx: './src/xxxx.js',
+}
+```
+弊端：如果有公共的代码块，那么打包之后的两个Bundle里都会包含重复的模块。
 
 
 
-    2.3 splitChunks - 智能抽取公共代码
-    ```javascript
-    optimization: {
-        splitChunks: {
-            cacheGroups: {
-                commons: {
-                    test: /[\\/]node_modules[\\/]/, // 匹配规则，可以根据需要调整粒度
-                    name: 'vendor', // 模块的名字
-                    chunks: 'all', 
-                    minChunks: 1, // 至少被引用1次才会生成代码块,也可以全局配置。
-                },
+2.3 splitChunks - 智能抽取公共代码
+```javascript
+optimization: {
+    splitChunks: {
+        cacheGroups: {
+            commons: {
+                test: /[\\/]node_modules[\\/]/, // 匹配规则，可以根据需要调整粒度
+                name: 'vendor', // 模块的名字
+                chunks: 'all', 
+                minChunks: 1, // 至少被引用1次才会生成代码块,也可以全局配置。
             },
         },
-    }
-    ```
+    },
+}
+```
 
-3. tree shaking(摇树)
+3.tree shaking(摇树)
 代码中可能存在没有被引用的方法或者没有被使用的css样式使代码体积增大，可以通过js/css shaking减少代码的体积。
 3.1 css shaking
 以前的方案
@@ -286,7 +286,7 @@ sideEffects: [./xx.js] // ./xx.js 不会被不删除
 
 
 ## 构建速度分析
-1. 查看webpack complier生命周期执行用时的消耗
+1.查看webpack complier生命周期执行用时的消耗
 ```javascript
 const webpack = require('webpack');
 const webpakConfig = require('./webpack.config.js')
@@ -332,7 +332,7 @@ run -> done 花费： 0ms
 run -> afterDone 花费： 0ms
 ```
 
-2. 体积分析  
+2.体积分析  
 ```javascript
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 ...
@@ -341,7 +341,7 @@ new BundleAnalyzerPlugin()
 能个直观的展示打包之后各个文件的大小，重点对大文件进行关注
 
 
-3. 速度分析
+3.速度分析
 ```javascript
 const SpeedMeasurePlugin=require('speed-measure-webpack-plugin')
 const smp = new SpeedMeasurePlugin();

@@ -48,24 +48,24 @@ bundle -> bundle: 请求新模块的内容 通过script引入
 ```
 node_modules/webpack-dev-server/lib/Server.js
 ```javascript
-    const { compile, invalid, done } = compiler.hooks;
-    ...
-    done.tap('webpack-dev-server', (stats) => {
-        this._sendStats(this.sockets, this.getStats(stats)); // 
-        this._stats = stats;
-    });
+const { compile, invalid, done } = compiler.hooks;
+...
+done.tap('webpack-dev-server', (stats) => {
+    this._sendStats(this.sockets, this.getStats(stats)); // 
+    this._stats = stats;
+});
 ```
 基于webpack compiler 生命周期通过this.sockWrite发送消息到client端
 ```javascript
-    this.sockWrite(sockets, 'hash', stats.hash);
+this.sockWrite(sockets, 'hash', stats.hash);
 
-    if (stats.errors.length > 0) {
-      this.sockWrite(sockets, 'errors', stats.errors);
-    } else if (stats.warnings.length > 0) {
-      this.sockWrite(sockets, 'warnings', stats.warnings);
-    } else {
-      this.sockWrite(sockets, 'ok');
-    }
+if (stats.errors.length > 0) {
+  this.sockWrite(sockets, 'errors', stats.errors);
+} else if (stats.warnings.length > 0) {
+  this.sockWrite(sockets, 'warnings', stats.warnings);
+} else {
+  this.sockWrite(sockets, 'ok');
+}
 ```
 
 node_modules/webpack-dev-server/client/index.js
@@ -90,18 +90,17 @@ node_modules/webpack-dev-server/client/index.js
 ```
 
 ```javascript
-    module.hot
-			.check(true)
+module.hot.check(true)
 ```
 这里的module.hot 由bundle.js createModuleHotObject创建 module.hot.check(true) 调用
 
 ```javascript
-    function hotCheck(applyOnUpdate) {
+function hotCheck(applyOnUpdate) {
+    ...
+    return __webpack_require__.hmrM().then(function (update) {
         ...
-        return __webpack_require__.hmrM().then(function (update) {
-            ...
-        });
-    }
+    });
+}
 ```
 __webpack_require__.hmrM()主要通过fetch请求服务端数据
 ```javascript
@@ -159,37 +158,28 @@ loadUpdateChunk 通过__webpack_require__.l 创建script标签引入更新的模
 ```javascript
 ...
 return new Promise((resolve, reject) => {
-    
     waitingUpdateResolves[chunkId] = resolve;
     ...
-
+})
 ```
 每次调用loadUpdateChunk返回一个Promise 以waitingUpdateResolves 收集resolve 当本次更新完成执行resolve
 ```javascript
 self["webpackHotUpdatehmr"] = (chunkId, moreModules, runtime) => {
     ...
     if (runtime) currentUpdateRuntime.push(runtime);
-    /******/
     if (waitingUpdateResolves[chunkId]) {
-        /******/
         waitingUpdateResolves[chunkId]();
-        /******/
         waitingUpdateResolves[chunkId] = undefined;
-        /******/
     }
-    /******/
 };
 ```
 bundle.js 声明webpackHotUpdatehmr 方法 当__webpack_require__.l 引入新内容并成功加载时触发
 ```javascript
 self["webpackHotUpdatehmr"]("main",{
-      "./src/a.js":
-      ((module, __unused_webpack_exports, __webpack_require__) => {
-        eval("const b = __webpack_require__(/*! ./b */ \"./src/b.js\")\nmodule.exports = {\n    a: 'abcdedfd',\n    b: b\n}\n\n//# sourceURL=webpack://hmr/./src/a.js?");
-     })
-
-},
-...
+      "./src/a.js":((module, __unused_webpack_exports, __webpack_require__) => {
+              eval("const b = __webpack_require__(/*! ./b */ \"./src/b.js\")\nmodule.exports = {\n    a: 'abcdedfd',\n    b: b\n}\n\n//# sourceURL=webpack://hmr/./src/a.js?");
+          })
+      },
 );
 ```
 当所有的更新资源加载完成时调用hotCheck 中的如下代码
