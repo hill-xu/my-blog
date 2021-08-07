@@ -338,7 +338,7 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 ...
 new BundleAnalyzerPlugin()
 ```
-能个直观的展示打包之后各个文件的大小，重点对大文件进行关注
+能够直观的展示打包之后各个文件的大小，重点对大文件进行关注
 
 
 3.速度分析
