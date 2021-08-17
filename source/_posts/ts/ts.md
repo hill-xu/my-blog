@@ -1,10 +1,13 @@
+---
+title: ts基础知识
+---
 # ts基础知识
 <!-- 和相关报错处理 -->
 
 <!-- ## 基础知识 -->
 
 ### 基础类型
-1. 
+1. 简单类型
 ```javascript
 const myName: string = 'hill-xu'; // 字符串类型
 const myMoney: number = 100; // 数字类型
