@@ -7,7 +7,7 @@ title: ts基础知识
 <!-- ## 基础知识 -->
 
 ### 基础类型
-1. 简单类型
+1. 类型初探
 ```javascript
 const myName: string = 'hill-xu'; // 字符串类型
 const myMoney: number = 100; // 数字类型
@@ -51,7 +51,7 @@ function setXX(name: string): void {}
 6. never: 没啥用
 
 ### 接口(interface)
-1. 
+1. 接口初探
 ```javascript
 interface myInterFace {
     props1: string;
